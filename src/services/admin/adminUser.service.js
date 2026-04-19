@@ -7,9 +7,52 @@ import Member from "../../models/member.model.js";
 import JobApplication from "../../models/jobApplication.model.js";
 
 // Get all users with pagination and search
+// export const getAllUsersService = async (page = 1, limit = 20, filters = {}) => {
+//   const skip = (page - 1) * limit;
+//   const query = {};
+//   if (filters.search) {
+//     query.$or = [
+//       { email: { $regex: filters.search, $options: 'i' } },
+//       { userName: { $regex: filters.search, $options: 'i' } },
+//       { firstName: { $regex: filters.search, $options: 'i' } },
+//       { lastName: { $regex: filters.search, $options: 'i' } }
+//     ];
+//   }
+//   if (filters.status) query.status = filters.status;
+//   if (filters.role) query.role = filters.role;
+
+//   const users = await User.find(query)
+//     .select('-password')
+//     .skip(skip)
+//     .limit(limit)
+//     .sort({ createdAt: -1 })
+//     .lean();
+
+//   const total = await User.countDocuments(query);
+
+//   // Attach profile data
+//   const usersWithProfile = await Promise.all(
+//     users.map(async (user) => {
+//       const profile = await Profile.findOne({ userId: user._id }).lean();
+//       return { ...user, profile };
+//     })
+//   );
+
+//   return {
+//     success: true,
+//     data: usersWithProfile,
+//     pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+//   };
+// };
+
+// Helper to get date based on filter string
+
+
 export const getAllUsersService = async (page = 1, limit = 20, filters = {}) => {
   const skip = (page - 1) * limit;
   const query = {};
+
+  // 1. Search Logic
   if (filters.search) {
     query.$or = [
       { email: { $regex: filters.search, $options: 'i' } },
@@ -18,19 +61,29 @@ export const getAllUsersService = async (page = 1, limit = 20, filters = {}) => 
       { lastName: { $regex: filters.search, $options: 'i' } }
     ];
   }
+
+  // 2. Status & Role Filters
   if (filters.status) query.status = filters.status;
   if (filters.role) query.role = filters.role;
+
+  // 3. TIME FILTER (Yahan update kiya hai)
+  // 'filter' frontend se '1d', '7d' etc. ke roop mein aayega
+  if (filters.filter) {
+    const startDate = getDateRange(filters.filter);
+    if (startDate) {
+      query.lastLogin = { $gte: startDate };
+    }
+  }
 
   const users = await User.find(query)
     .select('-password')
     .skip(skip)
     .limit(limit)
-    .sort({ createdAt: -1 })
+    .sort({ lastLogin: -1 }) // Login time ke hisaab se sort karein
     .lean();
 
   const total = await User.countDocuments(query);
 
-  // Attach profile data
   const usersWithProfile = await Promise.all(
     users.map(async (user) => {
       const profile = await Profile.findOne({ userId: user._id }).lean();
@@ -44,17 +97,6 @@ export const getAllUsersService = async (page = 1, limit = 20, filters = {}) => 
     pagination: { page, limit, total, pages: Math.ceil(total / limit) }
   };
 };
-
-// Get single user details
-// export const getUserDetailService = async (userId) => {
-//   const user = await User.findById(userId).select('-password').lean();
-//   if (!user) return { success: false, message: 'User not found' };
-
-//   const profile = await Profile.findOne({ userId }).lean();
-
-//   return { success: true, data: { user, profile: profile || null } };
-// };
-
 
 export const getUserDetailService = async (userId) => {
   try {
@@ -183,34 +225,40 @@ export const demoteToUserService = async (userId, adminId) => {
 
 // Get user statistics (totals, active/inactive, new users over time)
 export const getUserStatsService = async () => {
-  const totalUsers = await User.countDocuments();
-  const verifiedUsers = await User.countDocuments({ emailVerified: true });
-  const suspendedUsers = await User.countDocuments({ status: 'suspended' });
-  const premiumUsers = await User.countDocuments({ isPremium: true });
-  const activeUsers = await User.countDocuments({ status: 'active', isBlocked: false }); // adjust based on your fields
+  const now = new Date();
+  const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const last48h = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  // New users last 30 days
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const newUsersLast30Days = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
-
-  // Active users last 24 hours (based on lastLogin)
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const activeUsersLast24Hours = await User.countDocuments({ lastLogin: { $gte: twentyFourHoursAgo }, status: 'active' });
+  const [
+    totalUsers, 
+    verifiedUsers, 
+    premiumUsers, 
+    active24h, 
+    active48h, 
+    newUsers30d
+  ] = await Promise.all([
+    User.countDocuments(),
+    User.countDocuments({ emailVerified: true }),
+    User.countDocuments({ isPremium: true }),
+    // Active users based on timestamp (Not just string status)
+    User.countDocuments({ lastLogin: { $gte: last24h }, isActive: { $ne: false } }),
+    User.countDocuments({ lastLogin: { $gte: last48h }, isActive: { $ne: false } }),
+    User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
+  ]);
 
   return {
     success: true,
     data: {
       totalUsers,
       verifiedUsers,
-      suspendedUsers,
       premiumUsers,
-      activeUsers,
-      newUsersLast30Days,
-      activeUsersLast24Hours
+      active24h, // Card: Active (24h)
+      active48h, // Card: Active (48h)
+      newUsersLast30Days: newUsers30d
     }
   };
 };
-
 // Get user registrations over time (for graph)
 export const getUserRegistrationsOverTimeService = async (filter) => {
   const startDate = getDateRange(filter);

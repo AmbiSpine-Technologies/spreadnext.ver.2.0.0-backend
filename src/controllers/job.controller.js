@@ -9,8 +9,9 @@ import {
   updateJobService,
   deleteJobService,
   getMyJobsService,
-getMyJobsAppliedService,
+  getMyJobsAppliedService,
   getFeaturedJobsService,
+  getTrendingJobsService,
 } from "../services/job.service.js";
 import { MSG } from "../constants/messages.js";
 import { requestCompanyEmailOTP, verifyOTP } from "../services/otp.service.js";
@@ -39,6 +40,26 @@ export const createJob = async (req, res) => {
 };
 
 
+
+// @desc    Get top 8 trending jobs
+// @route   GET /api/jobs/trending
+export const getTrendingJobs = async (req, res) => {
+  try {
+    const result = await getTrendingJobsService();
+    
+    if (result.success) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(400).json(result);
+    }
+  } catch (err) {
+    console.error("TRENDING JOBS CONTROLLER ERROR:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 
 export const requestVerification = async (req, res) => {
   try {

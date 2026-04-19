@@ -39,6 +39,7 @@ const allowedOrigins = [
   "https://spreadnext.com",
   "https://www.spreadnext.com",
   "http://localhost:3000",
+  "http://localhost:3001",
   
 ];
 

@@ -8,8 +8,9 @@ import {
   getMyJobs,
   getFeaturedJobs,
   toggleJobStatus,
-getJobsAppliedController,
+  getJobsAppliedController,
    requestVerification, validateOTP,
+   getTrendingJobs,
   // make sure this is exported in job.controller.js
 } from "../controllers/job.controller.js";
 import {
@@ -28,6 +29,7 @@ const router = express.Router();
 // Public routes
 router.get("/all", getAllJobs);
 router.get("/featured", getFeaturedJobs);
+router.get("/trending", getTrendingJobs);
 router.get("/:id", getJobById);
 
 // Protected routes

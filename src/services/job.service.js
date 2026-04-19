@@ -26,6 +26,28 @@ export const createJobService = async (jobData, userId) => {
   }
 };
 
+export const getTrendingJobsService = async () => {
+  try {
+    const trendingJobs = await Job.find({ isActive: true })
+      .sort({ 
+        views: -1, 
+        applicationsCount: -1, 
+        createdAt: -1 
+      })
+      .limit(8);
+
+    return {
+      success: true,
+      data: trendingJobs,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
 export const getAllJobsService = async (filters = {}, pagination = {}) => {
   try {
     const {

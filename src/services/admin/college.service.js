@@ -203,12 +203,65 @@ export const reactivateCollegeService = async (collegeId, adminId) => {
 };
 
 // Update college (admin edit)
+// export const updateCollegeService = async (collegeId, adminId, updates) => {
+//   try {
+//     const college = await College.findByIdAndUpdate(collegeId, updates, {
+//       new: true,
+//       runValidators: true,
+//     });
+
+//     if (!college) {
+//       return {
+//         success: false,
+//         message: "College not found",
+//       };
+//     }
+
+//     // Log activity
+//     await logAdminActivity(adminId, "edit_college", "College", collegeId, {
+//       changes: updates,
+//     });
+
+//     return {
+//       success: true,
+//       message: "College updated successfully",
+//       data: college,
+//     };
+//   } catch (error) {
+//     return {
+//       success: false,
+//       message: "Failed to update college",
+//       error: error.message,
+//     };
+//   }
+// };
 export const updateCollegeService = async (collegeId, adminId, updates) => {
   try {
-    const college = await College.findByIdAndUpdate(collegeId, updates, {
-      new: true,
-      runValidators: true,
+    // Remove protected fields that shouldn't be updated
+    const protectedFields = ['_id', 'createdBy', 'createdAt', 'followers', 'following', '__v'];
+    const cleanUpdates = { ...updates };
+    
+    protectedFields.forEach(field => {
+      delete cleanUpdates[field];
     });
+
+    // Also remove any field that might be misspelled
+    delete cleanUpdates.createById;
+    delete cleanUpdates.createdById;
+    delete cleanUpdates.id;
+
+    console.log("Updating college with data:", cleanUpdates);
+
+    const college = await College.findByIdAndUpdate(
+      collegeId,
+      { $set: cleanUpdates },
+      { 
+        new: true, 
+        runValidators: false, // Disable validators to avoid required field issues
+        context: 'query'
+      }
+    ).populate("createdBy", "firstName lastName email")
+     .populate("admins", "firstName lastName email");
 
     if (!college) {
       return {
@@ -217,17 +270,13 @@ export const updateCollegeService = async (collegeId, adminId, updates) => {
       };
     }
 
-    // Log activity
-    await logAdminActivity(adminId, "edit_college", "College", collegeId, {
-      changes: updates,
-    });
-
     return {
       success: true,
       message: "College updated successfully",
       data: college,
     };
   } catch (error) {
+    console.error("Update college error:", error);
     return {
       success: false,
       message: "Failed to update college",
@@ -235,7 +284,6 @@ export const updateCollegeService = async (collegeId, adminId, updates) => {
     };
   }
 };
-
 
 export const getCollegeRegistrationsOverTimeService = async (filter) => {
   const startDate = getDateRange(filter);
