@@ -120,7 +120,8 @@ const careerExpectationsSchema = Joi.object({
 
 const jobAlertPreferencesSchema = Joi.object({
   preferredRoleTypes: Joi.array().items(Joi.string()).default([]),
-  locationPreference: Joi.string().valid("Remote", "Onsite", "Hybrid", "").allow(""),
+  // locationPreference: Joi.string().valid("Remote", "Onsite", "Hybrid", "").allow(""),
+  locationPreference: Joi.string().allow(""),
   targetRole: Joi.string().allow(""),
   targetIndustry: Joi.string().allow(""),
   salaryRange: Joi.object({

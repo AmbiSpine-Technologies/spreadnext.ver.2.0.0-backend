@@ -236,13 +236,15 @@ languages: [
 
     jobAlertPreferences: {
       preferredRoleTypes: [{ type: String }], 
-      locationPreference: { type: String, enum: ["Remote", "Onsite", "Hybrid", ""], default: "" },
+      // locationPreference: { type: String, enum: ["Remote", "Onsite", "Hybrid", ""], default: "" },
+      locationPreference: { type: String, default: "" },
+
       targetRole: { type: String, default: "" },
       targetIndustry: { type: String, default: "" },
       salaryRange: {
         min: { type: Number, default: null },
         max: { type: Number, default: null },
-        currency: { type: String, default: "USD" },
+        currency: { type: String, default: "INR" },
       },
 
       recruitvisibility: { type: Boolean, default: false },
