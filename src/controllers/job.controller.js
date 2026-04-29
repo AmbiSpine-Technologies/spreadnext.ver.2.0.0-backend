@@ -12,6 +12,7 @@ import {
   getMyJobsAppliedService,
   getFeaturedJobsService,
   getTrendingJobsService,
+  getFilteredAmbiSpineJobsService,
 } from "../services/job.service.js";
 import { MSG } from "../constants/messages.js";
 import { requestCompanyEmailOTP, verifyOTP } from "../services/otp.service.js";
@@ -39,9 +40,29 @@ export const createJob = async (req, res) => {
   }
 };
 
+// ambispine jobs
+export const getAmbiSpineJobs = async (req, res) => {
+  try {
+    const { search, roles, teams, locations } = req.query;
+
+    const jobs = await getFilteredAmbiSpineJobsService({
+      search,
+      roles: roles ? roles.split(",") : [],
+      teams: teams ? teams.split(",") : [],
+      locations: locations ? locations.split(",") : [],
+    });
+
+    res.json({
+      success: true,
+      count: jobs.length,
+      data: jobs,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 
-// @desc    Get top 8 trending jobs
 // @route   GET /api/jobs/trending
 export const getTrendingJobs = async (req, res) => {
   try {
@@ -60,6 +81,8 @@ export const getTrendingJobs = async (req, res) => {
     });
   }
 };
+
+
 
 export const requestVerification = async (req, res) => {
   try {

@@ -26,7 +26,7 @@ import otpRoutes from "./src/routes/otp.routes.js";
 import adminRoutes from "./src/routes/admin/admin.routes.js"
 import dotenv from "dotenv";
 import adminAuthRoutes from './src/routes/admin/admin.auth.routes.js';
-
+import contactRoutes from './src/routes/contact.route.js'
 // import adminRoutes from './';
 import cookieParser from "cookie-parser"
 dotenv.config();
@@ -97,6 +97,7 @@ app.use("/api/interfeed", feedbackRoutes);
 app.use("/api/assessment", assessmentRoutes);
 app.use("/api/automation", automationRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/otp/", otpRoutes);
 app.use("/api/admin/", adminRoutes);

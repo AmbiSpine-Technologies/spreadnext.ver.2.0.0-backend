@@ -11,6 +11,7 @@ import {
   getJobsAppliedController,
    requestVerification, validateOTP,
    getTrendingJobs,
+   getAmbiSpineJobs,
   // make sure this is exported in job.controller.js
 } from "../controllers/job.controller.js";
 import {
@@ -30,6 +31,7 @@ const router = express.Router();
 router.get("/all", getAllJobs);
 router.get("/featured", getFeaturedJobs);
 router.get("/trending", getTrendingJobs);
+router.get("/ambiSpine-job", getAmbiSpineJobs );
 router.get("/:id", getJobById);
 
 // Protected routes

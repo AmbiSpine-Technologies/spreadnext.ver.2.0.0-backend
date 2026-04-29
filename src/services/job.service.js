@@ -26,6 +26,51 @@ export const createJobService = async (jobData, userId) => {
   }
 };
 
+export const getFilteredAmbiSpineJobsService = async ({
+  search,
+  roles,     // Frontend se 'Full-time' etc yahan aayega
+  teams,     // Frontend se 'Marketing' etc yahan aayega
+  locations,
+  workModes,
+}) => {
+  let query = {
+    // Company name ko regex se check karein taaki case/space ka issue na ho
+    company: { $regex: "Ambispine Technologies", $options: "i" },
+    isActive: true,
+  };
+
+  // 🔍 Search (Search by title, industry, or skills)
+  if (search) {
+    query.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { industry: { $regex: search, $options: "i" } },
+      { skills: { $in: [new RegExp(search, "i")] } }
+    ];
+  }
+
+  // 🎯 Filter Mapping (Schema names ke hisaab se)
+  if (roles?.length) {
+    // Frontend 'roles' actually schema ka 'jobType' hai
+    query.jobType = { $in: roles.map(r => new RegExp(`^${r}$`, "i")) };
+  }
+  
+  if (teams?.length) {
+    // Frontend 'teams' actually schema ka 'industry' hai
+    query.industry = { $in: teams.map(t => new RegExp(`^${t}$`, "i")) };
+  }
+
+  if (locations?.length) {
+    query.location = { $regex: locations.join("|"), $options: "i" };
+  }
+
+  if (workModes?.length) {
+    query.workMode = { $in: workModes.map(w => new RegExp(`^${w}$`, "i")) };
+  }
+
+  return await Job.find(query).sort({ createdAt: -1 });
+};
+
+
 export const getTrendingJobsService = async () => {
   try {
     const trendingJobs = await Job.find({ isActive: true })
