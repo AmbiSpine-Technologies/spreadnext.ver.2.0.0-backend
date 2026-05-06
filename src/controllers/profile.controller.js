@@ -147,6 +147,26 @@ export const createOrUpdateProfileController = async (req, res) => {
   }
 };
 
+
+export const getMeController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    const profile = await Profile.findOne({ userId });
+
+    res.json({
+      success: true,
+      profile,
+      role: profile.personalInfo.journeyType
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
+
 export const updateContactInfo = async (req, res) => {
   try {
     const profile = await updateContactInfoService(

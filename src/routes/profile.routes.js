@@ -39,6 +39,7 @@ import {
   updatePublicationItemController,
   deletePublicationItemController,
   updateAwardController,
+  getMeController,
 } from "../controllers/profile.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
@@ -50,7 +51,7 @@ const router = express.Router();
 router.get("/username/:username", getProfileByUsernameController);
 
 router.use(authMiddleware);
-
+router.get("/me", authMiddleware, getMeController);
 router.put("/media", authMiddleware, multerUpload.fields([
   { name: 'profileImage', maxCount: 1 },
   { name: 'profileCover', maxCount: 1 }

@@ -27,8 +27,10 @@ import adminRoutes from "./src/routes/admin/admin.routes.js"
 import dotenv from "dotenv";
 import adminAuthRoutes from './src/routes/admin/admin.auth.routes.js';
 import contactRoutes from './src/routes/contact.route.js'
-// import adminRoutes from './';
-import cookieParser from "cookie-parser"
+import web_newsRoute from './src/routes/news.routes.js'
+import cookieParser from "cookie-parser";
+import mongoose from 'mongoose';
+
 dotenv.config();
 
 const app = express();
@@ -117,6 +119,7 @@ app.use("/api/explore", exploreRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/college", collegeRoutes);
+app.use("/api/web-news", web_newsRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -135,6 +138,9 @@ app.use((req, res) => {
     message: "Route not found",
   });
 });
+
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

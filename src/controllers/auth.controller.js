@@ -89,6 +89,30 @@ export const googleLoginController = async (req, res) => {
   }
 };
 
+
+export const loginUser = async (req, res) => {
+  try {
+    const { error } = loginValidation.validate(req.body);
+    if (error) return res.status(400).json({ message: error.message });
+
+    const { identifier, password, rememberMe } = req.body;
+
+    const result = await loginService(identifier, password, rememberMe);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    // ✅ If redirect exists → SSO flow
+
+    
+    res.status(result.success ? 200 : 400).json(result);
+
+  } catch (err) {
+    res.status(500).json({ message: MSG.ERROR.SERVER_ERROR });
+  }
+};
+
+
 export const getInactiveUsers = async (req, res) => {
   try {
     const users = await findInactiveUsersService();
@@ -108,20 +132,20 @@ export const getInactiveUsers = async (req, res) => {
 };
 
 
-export const loginUser = async (req, res) => {
-  try {
-    const { error } = loginValidation.validate(req.body);
-    if (error) return res.status(400).json({ message: error.message });
+// export const loginUser = async (req, res) => {
+//   try {
+//     const { error } = loginValidation.validate(req.body);
+//     if (error) return res.status(400).json({ message: error.message });
 
-    const { identifier, password, rememberMe } = req.body;
+//     const { identifier, password, rememberMe } = req.body;
 
-    const result = await loginService(identifier, password, rememberMe);
-    res.status(result.success ? 200 : 400).json(result);
+//     const result = await loginService(identifier, password, rememberMe);
+//     res.status(result.success ? 200 : 400).json(result);
 
-  } catch (err) {
-    res.status(500).json({ message: MSG.ERROR.SERVER_ERROR });
-  }
-};
+//   } catch (err) {
+//     res.status(500).json({ message: MSG.ERROR.SERVER_ERROR });
+//   }
+// };
 
 
 export const getAllUsersController = async (req, res) => {

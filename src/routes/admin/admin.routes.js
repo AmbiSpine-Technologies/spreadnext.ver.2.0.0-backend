@@ -6,7 +6,8 @@ import * as companyController from '../../controllers/admin/company.controller.j
 import * as companyCollege from '../../controllers/admin/college.controller.js';
 import * as jobController from '../../controllers/admin/jobs.controller.js';
 import * as jobApplication from "../../controllers/admin/jobapplication.controller.js";
-
+import * as newsController from '../../controllers/admin/news.controller.js';
+import { multerUpload } from "../../middlewares/upload.middleware.js";
 const router = express.Router();
 
 // Apply auth middleware to all admin routes
@@ -14,7 +15,7 @@ router.use(protect);
 router.use(admin); 
 
 // ============= DASHBOARD =============
-router.get("/dashboard/stats", adminController.getStats);
+router.get("/dashboard/stats",  adminController.getStats);
 
 // ============= USER MANAGEMENT =============
 router.get('/users', userController.getAllUsers);
@@ -28,6 +29,13 @@ router.patch('/users/:userId/reactivate', userController.reactivateUser);
 router.patch('/users/:userId/profile', userController.updateUserProfile);
 router.delete('/users/:userId', userController.deleteUser);
 router.get('/export/users', userController.exportUsers);
+
+// news
+
+router.post("/news/publish", multerUpload.single('featuredImage'), superAdmin, newsController.publishNews);
+router.put("/news/update/:id", multerUpload.single('featuredImage'), superAdmin, newsController.editNews);
+router.delete("/news/delete/:id",superAdmin, newsController.deleteNewsItem);
+
 
 // Super admin only
 router.put('/users/:userId/promote', superAdmin, userController.promoteToAdmin);
