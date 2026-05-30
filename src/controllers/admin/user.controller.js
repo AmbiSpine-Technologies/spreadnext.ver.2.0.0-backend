@@ -3,8 +3,8 @@ import * as userService from '../../services/admin/adminUser.service.js';
 
 export const getAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search, status, role } = req.query;
-    const result = await userService.getAllUsersService(parseInt(page), parseInt(limit), { search, status, role });
+    const { page = 1, limit = 20, search, status, role, filter } = req.query;
+    const result = await userService.getAllUsersService(parseInt(page), parseInt(limit), { search, status, role, filter });
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

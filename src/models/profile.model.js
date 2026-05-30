@@ -280,7 +280,6 @@ languages: [
   { timestamps: true }
 );
 
-// userId already has unique: true which creates an index automatically
 
 export default mongoose.model("Profile", profileSchema);
 

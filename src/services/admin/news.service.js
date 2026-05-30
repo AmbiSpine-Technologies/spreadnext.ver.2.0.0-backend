@@ -4,11 +4,12 @@ import slugify from "slugify";
 
 export const createNewsService = async (newsData, file) => {
   try {
-    // 1. Check if file exists (Validation before S3)
     if (!file) {
       throw new Error("Featured image is required to publish news.");
     }
-
+if (newsData.isFeatured === "true" || newsData.isFeatured === true) {
+    await News.updateMany({ isFeatured: true }, { isFeatured: false });
+  }
     // 2. Upload to S3
     const uploaded = await uploadToS3(file, "news/featured-images");
 
@@ -27,6 +28,7 @@ export const createNewsService = async (newsData, file) => {
       ...newsData,
       featuredImage: mediaData,
       slug: slugify(newsData.title, { lower: true, strict: true }),
+      isFeatured: newsData.isFeatured === "true"
     });
 
     return await news.save();
@@ -41,26 +43,56 @@ export const updateNews = async (id, updateData, file) => {
   const existingNews = await News.findById(id);
   if (!existingNews) throw new Error("News not found");
 
+  const { featuredImage, ...cleanUpdateData } = updateData;
+
   let mediaData = existingNews.featuredImage;
 
-  // Agar nayi file aayi hai: Purani delete karo -> Nayi upload karo
-  if (file) {
-    if (existingNews.featuredImage?.key) {
-      await deleteFromS3(existingNews.featuredImage.key);
-    }
-    const key = await uploadFileToS3(file);
-    const url = `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-    mediaData = { url, key };
+  // 1. Reset other featured articles safely
+  if (cleanUpdateData.isFeatured === "true" || cleanUpdateData.isFeatured === true) {
+    await News.updateMany(
+      { _id: { $ne: id }, isFeatured: true }, 
+      { isFeatured: false }
+    );
   }
 
-  const slug = updateData.title 
-    ? slugify(updateData.title, { lower: true, strict: true }) 
+  // 2. Process physical file swap
+  if (file) {
+    // Delete the old file if it exists
+    if (existingNews.featuredImage?.key) {
+      try {
+        await deleteFromS3(existingNews.featuredImage.key);
+      } catch (err) {
+        console.error("Non-blocking old S3 asset deletion failure:", err);
+      }
+    }
+    
+    // Upload new image
+    const uploaded = await uploadToS3(file, "news/featured-images");
+    if (!uploaded || !uploaded.url) {
+      throw new Error("Failed to upload new image to S3.");
+    }
+    
+    mediaData = { 
+      url: uploaded.url, 
+      key: uploaded.key || "" 
+    };
+  }
+
+  // 3. Generate stable URL safe slug
+  const slug = cleanUpdateData.title 
+    ? slugify(cleanUpdateData.title, { lower: true, strict: true }) 
     : existingNews.slug;
 
+  // 4. Update with explicit control blocks
   return await News.findByIdAndUpdate(
     id,
-    { ...updateData, featuredImage: mediaData, slug },
-    { new: true }
+    { 
+      ...cleanUpdateData, 
+      featuredImage: mediaData, 
+      slug,
+      isFeatured: cleanUpdateData.isFeatured === "true" || cleanUpdateData.isFeatured === true
+    },
+    { new: true, runValidators: true } // runValidators protects schema structure
   );
 };
 

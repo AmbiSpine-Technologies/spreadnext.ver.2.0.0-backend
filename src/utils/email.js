@@ -1,29 +1,7 @@
-// // src/utils/email.js
-// import nodemailer from 'nodemailer';
-
-// const transporter = nodemailer.createTransport({
-//   host: process.env.EMAIL_HOST,
-//   port: process.env.EMAIL_PORT,
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
-
-// export const sendResetEmail = async (to, resetLink) => {
-//   const mailOptions = {
-//     from: `"SpreadNext Admin" <${process.env.EMAIL_FROM}>`,
-//     to,
-//     subject: 'Password Reset Request',
-//     html: `<p>You requested a password reset. Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`,
-//   };
-//   await transporter.sendMail(mailOptions);
-// };
-
 
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
   service: 'gmail', 
   auth: {
     user: process.env.EMAIL_USER,

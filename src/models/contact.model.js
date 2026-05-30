@@ -15,7 +15,10 @@ const contactSchema = new mongoose.Schema({
   },
   subject: { type: String, required: true },
   description: { type: String, required: true },
-  attachmentKey: { type: String }, // S3 key store hogi
+ attachment: {
+    url: { type: String, default: null },
+    key: { type: String, default: null }
+  },
   status: { 
     type: String, 
     enum: ["Open", "In-Progress", "Resolved"], 

@@ -104,7 +104,6 @@ const adminSchema = new mongoose.Schema(
 );
 
 // Index for quick lookups
-adminSchema.index({ userId: 1 });
 adminSchema.index({ role: 1 });
 adminSchema.index({ status: 1 });
 adminSchema.index({ createdAt: -1 });

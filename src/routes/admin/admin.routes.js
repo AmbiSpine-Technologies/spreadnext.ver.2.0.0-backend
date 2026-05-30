@@ -8,14 +8,24 @@ import * as jobController from '../../controllers/admin/jobs.controller.js';
 import * as jobApplication from "../../controllers/admin/jobapplication.controller.js";
 import * as newsController from '../../controllers/admin/news.controller.js';
 import { multerUpload } from "../../middlewares/upload.middleware.js";
+import { getAdminContactTickets, getAdminDashboardStats, getAdminEarlyAccessUsers, getAdminRequirements, updateTicketStatus } from "../../controllers/contact.controller.js";
 const router = express.Router();
+
 
 // Apply auth middleware to all admin routes
 router.use(protect);
 router.use(admin); 
 
+
 // ============= DASHBOARD =============
 router.get("/dashboard/stats",  adminController.getStats);
+
+router.get("/contact-dashboard-stats", getAdminDashboardStats);
+router.get("/contacts", getAdminContactTickets);
+router.patch("/contacts/:id/status", updateTicketStatus);
+router.get("/early-access", getAdminEarlyAccessUsers);
+router.get("/requirements", getAdminRequirements);
+
 
 // ============= USER MANAGEMENT =============
 router.get('/users', userController.getAllUsers);
@@ -30,8 +40,13 @@ router.patch('/users/:userId/profile', userController.updateUserProfile);
 router.delete('/users/:userId', userController.deleteUser);
 router.get('/export/users', userController.exportUsers);
 
-// news
 
+router.get("/export/:collectionType", adminController.handleDynamicExport);
+
+// 2. Import Route: Isme 'upload.single("file")' lagaya hai jo incoming excel file ko process karega
+router.post("/import/:collectionType", multerUpload.single("file"), adminController.handleDynamicImport);
+
+// news
 router.post("/news/publish", multerUpload.single('featuredImage'), superAdmin, newsController.publishNews);
 router.put("/news/update/:id", multerUpload.single('featuredImage'), superAdmin, newsController.editNews);
 router.delete("/news/delete/:id",superAdmin, newsController.deleteNewsItem);

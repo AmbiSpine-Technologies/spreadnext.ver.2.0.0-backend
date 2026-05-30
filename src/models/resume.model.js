@@ -45,9 +45,6 @@ const resumeSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-resumeSchema.index({ user: 1, createdAt: -1 });
-resumeSchema.index({ shareToken: 1 });
 
 export default mongoose.model("Resume", resumeSchema);
 

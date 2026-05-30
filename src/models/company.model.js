@@ -137,7 +137,6 @@ const companySchema = new mongoose.Schema(
 
 // Indexes for better performance
 companySchema.index({ name: "text", industry: "text", description: "text" });
-companySchema.index({ email: 1 });
 companySchema.index({ createdBy: 1 });
 companySchema.index({ isVerified: 1, isActive: 1 });
 companySchema.index({ followers: -1 });

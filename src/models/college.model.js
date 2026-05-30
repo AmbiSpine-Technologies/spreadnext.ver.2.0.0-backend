@@ -126,7 +126,6 @@ const collegeSchema = new mongoose.Schema(
 
 // Indexes for better performance
 collegeSchema.index({ name: "text", city: "text", description: "text" });
-collegeSchema.index({ email: 1 });
 collegeSchema.index({ createdBy: 1 });
 collegeSchema.index({ isVerified: 1, isActive: 1 });
 collegeSchema.index({ followers: -1 });

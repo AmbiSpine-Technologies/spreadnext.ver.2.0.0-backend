@@ -18,32 +18,10 @@ export const handleContactForm = async (req, res) => {
   }
 };
 
-
-// export const submitRequirement = async (req, res) => {
-//   try {
-//     // Service ko call karke data save karwana
-  
-//     const result = await contactService.createRequirement(req.body);
-
-//     res.status(201).json({ 
-//       success: true, 
-//       message: "Requirement saved successfully",
-//       data: result 
-//     });
-//   } catch (error) {
-//     // Error handling logic
-//     res.status(500).json({ 
-//       success: false, 
-//       error: error.message 
-//     });
-//   }
-// };
-
-
 export const submitEarlyAccess = async (req, res) => {
   try {
     const user = await contactService.Eearlyuserregister(req.body);
-return res.status(201).json({ 
+    return res.status(201).json({ 
       success: true, 
       message: "Welcome to the waitlist!", 
       data: user 
@@ -63,8 +41,6 @@ export const submitRequirement = async (req, res) => {
       const userIp = (req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress)
                .replace('::ffff:', '') // Remove IPv4-mapped IPv6 prefix
                .replace('::1', '127.0.0.1'); // Convert local IPv6 to IPv4
-
-
     // 2. Cloud Header Detection
     const country = 
       req.headers['x-vercel-ip-country'] || 
@@ -85,5 +61,63 @@ export const submitRequirement = async (req, res) => {
     res.status(201).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getAdminDashboardStats = async (req, res) => {
+  try {
+    const { timeline = "7d" } = req.query;
+    const metrics = await contactService.fetchDashboardMetrics(timeline);
+    
+    return res.status(200).json({ success: true, ...metrics });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAdminContactTickets = async (req, res) => {
+  try {
+    const { page, limit, query } = req.query;
+    const records = await contactService.fetchPaginatedContacts({ page, limit, query });
+    
+    return res.status(200).json({ success: true, ...records });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateTicketStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const updatedRecord = await contactService.updateContactStatusById(id, status);
+    
+    return res.status(200).json({ success: true, data: updatedRecord });
+  } catch (error) {
+    const statusCode = error.message.includes("not found") ? 404 : 500;
+    return res.status(statusCode).json({ success: false, message: error.message });
+  }
+};
+
+export const getAdminEarlyAccessUsers = async (req, res) => {
+  try {
+    const { page, limit, query } = req.query;
+    const records = await contactService.fetchPaginatedEarlyAccess({ page, limit, query });
+    
+    return res.status(200).json({ success: true, ...records });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAdminRequirements = async (req, res) => {
+  try {
+    const { page, limit, query } = req.query;
+    const records = await contactService.fetchPaginatedRequirements({ page, limit, query });
+    
+    return res.status(200).json({ success: true, ...records });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

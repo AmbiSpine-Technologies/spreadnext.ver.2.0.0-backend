@@ -28,6 +28,8 @@ import dotenv from "dotenv";
 import adminAuthRoutes from './src/routes/admin/admin.auth.routes.js';
 import contactRoutes from './src/routes/contact.route.js'
 import web_newsRoute from './src/routes/news.routes.js'
+import consentRoutes from "./src/routes/consent.routes.js";
+import subscriberRoutes from  './src/routes/subscriber.routes.js';
 import cookieParser from "cookie-parser";
 import mongoose from 'mongoose';
 
@@ -60,7 +62,7 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Content-Length", "X-Request-Id"],
+  exposedHeaders: ["Content-Length", "X-Request-Id", 'Content-Disposition'],
   maxAge: 86400, 
 };
 
@@ -120,6 +122,8 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/college", collegeRoutes);
 app.use("/api/web-news", web_newsRoute);
+app.use("/api/cookie", consentRoutes);
+app.use('/api/sub', subscriberRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
